@@ -1,0 +1,22 @@
+{
+  "name": "@synerqo/core",
+  "version": "1.0.0",
+  "description": "SYNERQO Core",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "typescript": "^7.0.2",
+    "rimraf": "^6.1.3"
+  }
+}

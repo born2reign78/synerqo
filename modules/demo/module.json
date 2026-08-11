@@ -1,0 +1,10 @@
+{
+  "id": "demo",
+  "name": "Demo Module",
+  "version": "1.0.0",
+  "description": "Module de démonstration SYNERQO",
+  "author": "SYNERQO",
+  "coreVersion": "^1.0.0",
+  "dependencies": [],
+  "businessLinks": []
+}
