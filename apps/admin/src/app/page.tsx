@@ -2,7 +2,6 @@ import MainLayout from "@/components/layout/MainLayout";
 
 import {
   Bootstrap,
-  type IModuleInstaller,
   ModuleInstallState,
 } from "@synerqo/core";
 
@@ -17,12 +16,7 @@ export default async function ModulesPage() {
 
   const menus = kernel.menus().getTree();
 
-  const installer =
-    kernel
-      .services()
-      .resolve<IModuleInstaller>("ModuleInstaller");
-
-  const modules = installer.getModules();
+  const modules = kernel.modules().getAll();
 
   return (
     <MainLayout menus={menus}>
@@ -62,8 +56,10 @@ export default async function ModulesPage() {
               <td>
                 {module.state === ModuleInstallState.Enabled ? (
                   <button>Désactiver</button>
-                ) : (
+                ) : module.state === ModuleInstallState.NotInstalled ? (
                   <button>Installer</button>
+                ) : (
+                  <button>Activer</button>
                 )}
               </td>
             </tr>

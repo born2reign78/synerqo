@@ -1,0 +1,109 @@
+warning: in the working copy of 'apps/admin/src/app/page.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/apps/admin/src/app/page.tsx b/apps/admin/src/app/page.tsx[m
+[1mindex 9cc6f63..2f40a85 100644[m
+[1m--- a/apps/admin/src/app/page.tsx[m
+[1m+++ b/apps/admin/src/app/page.tsx[m
+[36m@@ -2,7 +2,6 @@[m [mimport MainLayout from "@/components/layout/MainLayout";[m
+ [m
+ import {[m
+   Bootstrap,[m
+[31m-  type IModuleInstaller,[m
+   ModuleInstallState,[m
+ } from "@synerqo/core";[m
+ [m
+[36m@@ -17,12 +16,7 @@[m [mexport default async function ModulesPage() {[m
+ [m
+   const menus = kernel.menus().getTree();[m
+ [m
+[31m-  const installer =[m
+[31m-    kernel[m
+[31m-      .services()[m
+[31m-      .resolve<IModuleInstaller>("ModuleInstaller");[m
+[31m-[m
+[31m-  const modules = installer.getModules();[m
+[32m+[m[32m  const modules = kernel.modules().getAll();[m
+ [m
+   return ([m
+     <MainLayout menus={menus}>[m
+[36m@@ -62,8 +56,10 @@[m [mexport default async function ModulesPage() {[m
+               <td>[m
+                 {module.state === ModuleInstallState.Enabled ? ([m
+                   <button>Désactiver</button>[m
+[31m-                ) : ([m
+[32m+[m[32m                ) : module.state === ModuleInstallState.NotInstalled ? ([m
+                   <button>Installer</button>[m
+[32m+[m[32m                ) : ([m
+[32m+[m[32m                  <button>Activer</button>[m
+                 )}[m
+               </td>[m
+             </tr>[m
+[1mdiff --git a/packages/core/src/kernel/IKernel.ts b/packages/core/src/kernel/IKernel.ts[m
+[1mindex 0b2b687..a36d80e 100644[m
+[1m--- a/packages/core/src/kernel/IKernel.ts[m
+[1m+++ b/packages/core/src/kernel/IKernel.ts[m
+[36m@@ -6,6 +6,7 @@[m [mimport type { IModuleLoader } from "../ModuleLoader/IModuleLoader.js";[m
+ import type { IModuleManager } from "../ModuleManager/IModuleManager.js";[m
+ [m
+ import type { IMenuRegistry } from "../MenuRegistry/IMenuRegistry.js";[m
+[32m+[m[32mimport type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";[m
+ import type { IRouteRegistry } from "../RouteRegistry/IRouteRegistry.js";[m
+ import type { IWidgetRegistry } from "../WidgetRegistry/IWidgetRegistry.js";[m
+ import type { IDashboardRegistry } from "../DashboardRegistry/IDashboardRegistry.js";[m
+[36m@@ -29,6 +30,8 @@[m [mexport interface IKernel {[m
+ [m
+   services(): IServiceContainer;[m
+ [m
+[32m+[m[32m  modules(): IModuleRegistry;[m
+[32m+[m
+   menus(): IMenuRegistry;[m
+ [m
+   routes(): IRouteRegistry;[m
+[1mdiff --git a/packages/core/src/kernel/kernel.ts b/packages/core/src/kernel/kernel.ts[m
+[1mindex dcfbb4c..b08e94c 100644[m
+[1m--- a/packages/core/src/kernel/kernel.ts[m
+[1m+++ b/packages/core/src/kernel/kernel.ts[m
+[36m@@ -6,13 +6,13 @@[m [mimport type { IModuleLoader } from "../ModuleLoader/IModuleLoader.js";[m
+ import type { IModuleManager } from "../ModuleManager/IModuleManager.js";[m
+ [m
+ import type { IMenuRegistry } from "../MenuRegistry/IMenuRegistry.js";[m
+[32m+[m[32mimport type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";[m
+ import type { IRouteRegistry } from "../RouteRegistry/IRouteRegistry.js";[m
+ import type { IWidgetRegistry } from "../WidgetRegistry/IWidgetRegistry.js";[m
+ import type { IDashboardRegistry } from "../DashboardRegistry/IDashboardRegistry.js";[m
+ import type { IApiRegistry } from "../ApiRegistry/IApiRegistry.js";[m
+ import type { IPermissionRegistry } from "../PermissionRegistry/IPermissionRegistry.js";[m
+ [m
+[31m-[m
+ import type { IKernel } from "./IKernel.js";[m
+ import { KernelStatus } from "./KernelStatus.js";[m
+ [m
+[36m@@ -38,20 +38,24 @@[m [mexport class Kernel implements IKernel {[m
+ [m
+     this.status = KernelStatus.Booting;[m
+ [m
+[31m-    // Chargement de la configuration[m
+     await this.configuration.load();[m
+ [m
+[31m-    // Découverte des modules[m
+     const modules = await this.moduleLoader.discover();[m
+ [m
+[31m-    // Chargement des modules[m
+     await this.moduleManager.load(this, modules);[m
+ [m
+     this.status = KernelStatus.Ready;[m
+   }[m
+[32m+[m
+   public services(): IServiceContainer {[m
+[31m-  return this.serviceContainer;[m
+[31m-}[m
+[32m+[m[32m    return this.serviceContainer;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  public modules(): IModuleRegistry {[m
+[32m+[m[32m    return this.services().resolve<IModuleRegistry>([m
+[32m+[m[32m      "ModuleRegistry"[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+ [m
+   /**[m
+    * Arrête le Core.[m

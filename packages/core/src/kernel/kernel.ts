@@ -6,12 +6,12 @@ import type { IModuleLoader } from "../ModuleLoader/IModuleLoader.js";
 import type { IModuleManager } from "../ModuleManager/IModuleManager.js";
 
 import type { IMenuRegistry } from "../MenuRegistry/IMenuRegistry.js";
+import type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";
 import type { IRouteRegistry } from "../RouteRegistry/IRouteRegistry.js";
 import type { IWidgetRegistry } from "../WidgetRegistry/IWidgetRegistry.js";
 import type { IDashboardRegistry } from "../DashboardRegistry/IDashboardRegistry.js";
 import type { IApiRegistry } from "../ApiRegistry/IApiRegistry.js";
 import type { IPermissionRegistry } from "../PermissionRegistry/IPermissionRegistry.js";
-
 
 import type { IKernel } from "./IKernel.js";
 import { KernelStatus } from "./KernelStatus.js";
@@ -38,20 +38,24 @@ export class Kernel implements IKernel {
 
     this.status = KernelStatus.Booting;
 
-    // Chargement de la configuration
     await this.configuration.load();
 
-    // Découverte des modules
     const modules = await this.moduleLoader.discover();
 
-    // Chargement des modules
     await this.moduleManager.load(this, modules);
 
     this.status = KernelStatus.Ready;
   }
+
   public services(): IServiceContainer {
-  return this.serviceContainer;
-}
+    return this.serviceContainer;
+  }
+
+  public modules(): IModuleRegistry {
+    return this.services().resolve<IModuleRegistry>(
+      "ModuleRegistry"
+    );
+  }
 
   /**
    * Arrête le Core.

@@ -16,9 +16,12 @@ import { PermissionRegistry } from "../PermissionRegistry/PermissionRegistry.js"
 import { ApiRegistry } from "../ApiRegistry/ApiRegistry.js";
 
 import type { IKernel } from "../Kernel/IKernel.js";
+import type { BootstrapOptions } from "../Bootstrap/BootstrapOptions.js";
 
 export class CoreFactory {
-  public static createKernel(): IKernel {
+  public static createKernel(
+    options: BootstrapOptions
+  ): IKernel {
     // -------------------------------------------------------------------------
     // Configuration
     // -------------------------------------------------------------------------
@@ -28,6 +31,11 @@ export class CoreFactory {
       debug: true,
       version: "1.0.0",
     });
+
+    configuration.set(
+      "modules.path",
+      options.modulesPath
+    );
 
     // -------------------------------------------------------------------------
     // Registry principal
@@ -40,15 +48,10 @@ export class CoreFactory {
     // -------------------------------------------------------------------------
 
     registry.register("menus", new MenuRegistry());
-
     registry.register("routes", new RouteRegistry());
-
     registry.register("widgets", new WidgetRegistry());
-
     registry.register("dashboards", new DashboardRegistry());
-
     registry.register("permissions", new PermissionRegistry());
-
     registry.register("apis", new ApiRegistry());
 
     // -------------------------------------------------------------------------
@@ -58,7 +61,6 @@ export class CoreFactory {
     const serviceContainer = new ServiceContainer();
 
     const moduleRegistry = new ModuleRegistry();
-
     const moduleInstaller = new ModuleInstaller(moduleRegistry);
 
     serviceContainer.registerSingleton(

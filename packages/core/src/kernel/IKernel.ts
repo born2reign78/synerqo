@@ -6,6 +6,7 @@ import type { IModuleLoader } from "../ModuleLoader/IModuleLoader.js";
 import type { IModuleManager } from "../ModuleManager/IModuleManager.js";
 
 import type { IMenuRegistry } from "../MenuRegistry/IMenuRegistry.js";
+import type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";
 import type { IRouteRegistry } from "../RouteRegistry/IRouteRegistry.js";
 import type { IWidgetRegistry } from "../WidgetRegistry/IWidgetRegistry.js";
 import type { IDashboardRegistry } from "../DashboardRegistry/IDashboardRegistry.js";
@@ -28,6 +29,8 @@ export interface IKernel {
   getRegistry(): IRegistry;
 
   services(): IServiceContainer;
+
+  modules(): IModuleRegistry;
 
   menus(): IMenuRegistry;
 
