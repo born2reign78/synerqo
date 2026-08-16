@@ -2,46 +2,95 @@ import type { IModuleInstaller } from "./IModuleInstaller.js";
 import type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";
 import { ModuleInstallState } from "../ModuleRegistry/ModuleInstallState.js";
 import type { ModuleInfo } from "../ModuleRegistry/ModuleInfo.js";
+import type { IModuleManager } from "../ModuleManager/IModuleManager.js";
 
 export class ModuleInstaller implements IModuleInstaller {
   public constructor(
-    private readonly registry: IModuleRegistry
+    private readonly registry: IModuleRegistry,
+    private readonly moduleManager: IModuleManager
   ) {}
 
   public async install(id: string): Promise<void> {
     const module = this.require(id);
 
-    module.state = ModuleInstallState.Installed;
+    if (
+      module.state !==
+      ModuleInstallState.NotInstalled
+    ) {
+      return;
+    }
+
+    module.state =
+      ModuleInstallState.Installed;
   }
 
   public async uninstall(id: string): Promise<void> {
     const module = this.require(id);
 
-    module.state = ModuleInstallState.NotInstalled;
+    if (
+      module.state ===
+      ModuleInstallState.Enabled
+    ) {
+      throw new Error(
+        `Module '${id}' must be disabled before uninstalling it.`
+      );
+    }
+
+    module.state =
+      ModuleInstallState.NotInstalled;
   }
 
   public async enable(id: string): Promise<void> {
     const module = this.require(id);
 
-    module.state = ModuleInstallState.Enabled;
+    if (
+      module.state ===
+      ModuleInstallState.NotInstalled
+    ) {
+      throw new Error(
+        `Module '${id}' must be installed before enabling it.`
+      );
+    }
+
+    if (
+      module.state ===
+      ModuleInstallState.Enabled
+    ) {
+      return;
+    }
+
+    await this.moduleManager.enable(id);
   }
 
   public async disable(id: string): Promise<void> {
     const module = this.require(id);
 
-    module.state = ModuleInstallState.Disabled;
+    if (
+      module.state !==
+      ModuleInstallState.Enabled
+    ) {
+      return;
+    }
+
+    await this.moduleManager.disable(id);
   }
 
   public isInstalled(id: string): boolean {
     const module = this.require(id);
 
-    return module.state !== ModuleInstallState.NotInstalled;
+    return (
+      module.state !==
+      ModuleInstallState.NotInstalled
+    );
   }
 
   public isEnabled(id: string): boolean {
     const module = this.require(id);
 
-    return module.state === ModuleInstallState.Enabled;
+    return (
+      module.state ===
+      ModuleInstallState.Enabled
+    );
   }
 
   public getModules(): readonly ModuleInfo[] {
@@ -52,7 +101,9 @@ export class ModuleInstaller implements IModuleInstaller {
     const module = this.registry.get(id);
 
     if (!module) {
-      throw new Error(`Module '${id}' not found.`);
+      throw new Error(
+        `Module '${id}' not found.`
+      );
     }
 
     return module;

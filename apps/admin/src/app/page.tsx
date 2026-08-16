@@ -1,19 +1,14 @@
-import path from "node:path";
-
 import MainLayout from "@/components/layout/MainLayout";
+import ModuleActions from "@/components/modules/ModuleActions";
 
-import {
-  Bootstrap,
-  ModuleInstallState,
-} from "@synerqo/core";
+import { ModuleInstallState } from "@synerqo/core";
+
+import { getKernel } from "@/lib/kernel";
+
+export const dynamic = "force-dynamic";
 
 export default async function ModulesPage() {
-  const kernel = await new Bootstrap({
-    modulesPath: path.resolve(
-      process.cwd(),
-      "../../modules"
-    ),
-  }).create();
+  const kernel = await getKernel();
 
   const menus = kernel.menus().getTree();
 
@@ -47,21 +42,23 @@ export default async function ModulesPage() {
               <td>{module.version}</td>
 
               <td>
-                {module.state === ModuleInstallState.Enabled
+                {module.state ===
+                ModuleInstallState.Enabled
                   ? "🟢 Activé"
-                  : module.state === ModuleInstallState.Disabled
-                    ? "🟡 Désactivé"
-                    : "⚪ Non installé"}
+                  : module.state ===
+                      ModuleInstallState.Installed
+                    ? "🔵 Installé"
+                    : module.state ===
+                        ModuleInstallState.Disabled
+                      ? "🟡 Désactivé"
+                      : "⚪ Non installé"}
               </td>
 
               <td>
-                {module.state === ModuleInstallState.Enabled ? (
-                  <button>Désactiver</button>
-                ) : module.state === ModuleInstallState.NotInstalled ? (
-                  <button>Installer</button>
-                ) : (
-                  <button>Activer</button>
-                )}
+                <ModuleActions
+                  id={module.id}
+                  state={module.state}
+                />
               </td>
             </tr>
           ))}

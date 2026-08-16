@@ -12,18 +12,11 @@ type ModuleConstructor = new () => IModule;
 
 type LoadedModule = {
   default?: unknown;
-  manifest?: unknown;
   [key: string]: unknown;
 };
 
 const nodeRequire = createRequire(import.meta.url);
 
-/**
- * Appel de require dynamique exécuté uniquement
- * au runtime Node.js.
- *
- * Turbopack ne doit pas analyser le chemin.
- */
 const dynamicRequire = new Function(
   "require",
   "modulePath",
@@ -36,23 +29,28 @@ const dynamicRequire = new Function(
 export class ModuleManager implements IModuleManager {
   private readonly modules: IModule[] = [];
 
+  private kernel: IKernel | undefined;
+
   public async load(
     kernel: IKernel,
     descriptors: readonly ModuleDescriptor[]
   ): Promise<void> {
+    this.kernel = kernel;
+
     this.modules.length = 0;
 
     const moduleRegistry =
       kernel
         .services()
-        .resolve<IModuleRegistry>("ModuleRegistry");
+        .resolve<IModuleRegistry>(
+          "ModuleRegistry"
+        );
 
     moduleRegistry.clear();
 
     for (const descriptor of descriptors) {
-      const module = this.instantiate(descriptor);
-
-      await module.register(kernel);
+      const module =
+        this.instantiate(descriptor);
 
       this.modules.push(module);
 
@@ -62,31 +60,146 @@ export class ModuleManager implements IModuleManager {
         version: module.manifest.version,
         description: module.manifest.description,
         author: module.manifest.author,
-        state: ModuleInstallState.Enabled,
+        state: ModuleInstallState.NotInstalled,
       });
-    }
-
-    for (const module of this.modules) {
-      await module.boot(kernel);
     }
   }
 
-  /**
-   * Instancie un module découvert par le ModuleLoader.
-   */
+  public async enable(
+    id: string
+  ): Promise<void> {
+    const kernel = this.requireKernel();
+    const module = this.requireModule(id);
+
+    const moduleRegistry =
+      kernel
+        .services()
+        .resolve<IModuleRegistry>(
+          "ModuleRegistry"
+        );
+
+    const moduleInfo = moduleRegistry.get(id);
+
+    if (!moduleInfo) {
+      throw new Error(
+        `Module '${id}' is not registered.`
+      );
+    }
+
+    if (
+      moduleInfo.state ===
+      ModuleInstallState.NotInstalled
+    ) {
+      throw new Error(
+        `Module '${id}' must be installed before enabling it.`
+      );
+    }
+
+    if (
+      moduleInfo.state ===
+      ModuleInstallState.Enabled
+    ) {
+      return;
+    }
+
+    await module.register(kernel);
+    await module.boot(kernel);
+
+    moduleInfo.state =
+      ModuleInstallState.Enabled;
+  }
+
+  public async disable(
+    id: string
+  ): Promise<void> {
+    const kernel = this.requireKernel();
+    const module = this.requireModule(id);
+
+    const moduleRegistry =
+      kernel
+        .services()
+        .resolve<IModuleRegistry>(
+          "ModuleRegistry"
+        );
+
+    const moduleInfo = moduleRegistry.get(id);
+
+    if (!moduleInfo) {
+      throw new Error(
+        `Module '${id}' is not registered.`
+      );
+    }
+
+    if (
+      moduleInfo.state !==
+      ModuleInstallState.Enabled
+    ) {
+      return;
+    }
+
+    await module.shutdown(kernel);
+
+    moduleInfo.state =
+      ModuleInstallState.Disabled;
+  }
+
+  public getModule(
+    id: string
+  ): IModule | undefined {
+    return this.modules.find(
+      (module) => module.manifest.id === id
+    );
+  }
+
+  public getModules(): readonly IModule[] {
+    return this.modules;
+  }
+
+  public hasModule(id: string): boolean {
+    return this.getModule(id) !== undefined;
+  }
+
+  public clear(): void {
+    this.modules.length = 0;
+    this.kernel = undefined;
+  }
+
+  private requireKernel(): IKernel {
+    if (!this.kernel) {
+      throw new Error(
+        "ModuleManager has not been initialized."
+      );
+    }
+
+    return this.kernel;
+  }
+
+  private requireModule(
+    id: string
+  ): IModule {
+    const module = this.getModule(id);
+
+    if (!module) {
+      throw new Error(
+        `Module '${id}' is not loaded.`
+      );
+    }
+
+    return module;
+  }
+
   private instantiate(
     descriptor: ModuleDescriptor
   ): IModule {
-    const loadedModule = dynamicRequire(
-      nodeRequire,
-      descriptor.entry
-    );
+    const loadedModule =
+      dynamicRequire(
+        nodeRequire,
+        descriptor.entry
+      );
 
-    /*
-     * Priorité à l'export default.
-     */
     if (
-      typeof loadedModule.default === "function"
+      typeof loadedModule.default ===
+      "function"
     ) {
       const ModuleClass =
         loadedModule.default as ModuleConstructor;
@@ -98,9 +211,6 @@ export class ModuleManager implements IModuleManager {
       }
     }
 
-    /*
-     * Recherche parmi les exports nommés.
-     */
     for (const exported of Object.values(
       loadedModule
     )) {
@@ -118,10 +228,7 @@ export class ModuleManager implements IModuleManager {
           return instance;
         }
       } catch {
-        /*
-         * Cet export n'est pas une classe de module
-         * instanciable sans argument.
-         */
+        // Cet export n'est pas un module.
       }
     }
 
@@ -131,9 +238,6 @@ export class ModuleManager implements IModuleManager {
     );
   }
 
-  /**
-   * Vérifie qu'une instance respecte le contrat IModule.
-   */
   private isModule(
     value: unknown
   ): value is IModule {
@@ -153,27 +257,5 @@ export class ModuleManager implements IModuleManager {
       typeof module.manifest === "object" &&
       module.manifest !== null
     );
-  }
-
-  public getModules(): readonly IModule[] {
-    return this.modules;
-  }
-
-  public getModule(
-    id: string
-  ): IModule | undefined {
-    return this.modules.find(
-      (module) => module.manifest.id === id
-    );
-  }
-
-  public hasModule(
-    id: string
-  ): boolean {
-    return this.getModule(id) !== undefined;
-  }
-
-  public clear(): void {
-    this.modules.length = 0;
   }
 }

@@ -47,23 +47,62 @@ export class CoreFactory {
     // Registries spécialisés
     // -------------------------------------------------------------------------
 
-    registry.register("menus", new MenuRegistry());
-    registry.register("routes", new RouteRegistry());
-    registry.register("widgets", new WidgetRegistry());
-    registry.register("dashboards", new DashboardRegistry());
-    registry.register("permissions", new PermissionRegistry());
-    registry.register("apis", new ApiRegistry());
+    registry.register(
+      "menus",
+      new MenuRegistry()
+    );
+
+    registry.register(
+      "routes",
+      new RouteRegistry()
+    );
+
+    registry.register(
+      "widgets",
+      new WidgetRegistry()
+    );
+
+    registry.register(
+      "dashboards",
+      new DashboardRegistry()
+    );
+
+    registry.register(
+      "permissions",
+      new PermissionRegistry()
+    );
+
+    registry.register(
+      "apis",
+      new ApiRegistry()
+    );
 
     // -------------------------------------------------------------------------
     // Services
     // -------------------------------------------------------------------------
 
-    const serviceContainer = new ServiceContainer();
+    const serviceContainer =
+      new ServiceContainer();
 
-    const moduleRegistry = new ModuleRegistry();
+    const moduleRegistry =
+      new ModuleRegistry();
+
+    const eventBus =
+      new EventBus();
+
+    const moduleLoader =
+      new ModuleLoader(
+        options.modulesPath
+      );
+
+    const moduleManager =
+      new ModuleManager();
 
     const moduleInstaller =
-      new ModuleInstaller(moduleRegistry);
+      new ModuleInstaller(
+        moduleRegistry,
+        moduleManager
+      );
 
     serviceContainer.registerSingleton(
       "ModuleRegistry",
@@ -74,14 +113,6 @@ export class CoreFactory {
       "ModuleInstaller",
       moduleInstaller
     );
-
-    const eventBus = new EventBus();
-
-    const moduleLoader = new ModuleLoader(
-      options.modulesPath
-    );
-
-    const moduleManager = new ModuleManager();
 
     // -------------------------------------------------------------------------
     // Kernel
