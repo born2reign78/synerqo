@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import MainLayout from "@/components/layout/MainLayout";
 
 import {
@@ -5,14 +7,13 @@ import {
   ModuleInstallState,
 } from "@synerqo/core";
 
-import { CoreModule } from "@synerqo/module-core";
-import { AdministrationModule } from "@synerqo/module-administration";
-
 export default async function ModulesPage() {
-  const kernel = await new Bootstrap([
-    new CoreModule(),
-    new AdministrationModule(),
-  ]).create();
+  const kernel = await new Bootstrap({
+    modulesPath: path.resolve(
+      process.cwd(),
+      "../../modules"
+    ),
+  }).create();
 
   const menus = kernel.menus().getTree();
 
@@ -49,8 +50,8 @@ export default async function ModulesPage() {
                 {module.state === ModuleInstallState.Enabled
                   ? "🟢 Activé"
                   : module.state === ModuleInstallState.Disabled
-                  ? "🟡 Désactivé"
-                  : "⚪ Non installé"}
+                    ? "🟡 Désactivé"
+                    : "⚪ Non installé"}
               </td>
 
               <td>

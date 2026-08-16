@@ -1,8 +1,8 @@
-import type { IModule } from "../ModuleManager/IModule.js";
+import type { ModuleDescriptor } from "../ModuleManager/ModuleDescriptor.js";
 
 export interface IModuleLoader {
   /**
    * Découvre les modules disponibles.
    */
-  discover(): Promise<readonly IModule[]>;
+  discover(): Promise<readonly ModuleDescriptor[]>;
 }

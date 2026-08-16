@@ -1,8 +1,12 @@
 import type { IKernel } from "../Kernel/IKernel.js";
 import type { IModule } from "./IModule.js";
+import type { ModuleDescriptor } from "./ModuleDescriptor.js";
 
 export interface IModuleManager {
-  load(kernel: IKernel, modules: readonly IModule[]): Promise<void>;
+  load(
+    kernel: IKernel,
+    modules: readonly ModuleDescriptor[]
+  ): Promise<void>;
 
   getModules(): readonly IModule[];
 

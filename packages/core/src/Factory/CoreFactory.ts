@@ -61,7 +61,9 @@ export class CoreFactory {
     const serviceContainer = new ServiceContainer();
 
     const moduleRegistry = new ModuleRegistry();
-    const moduleInstaller = new ModuleInstaller(moduleRegistry);
+
+    const moduleInstaller =
+      new ModuleInstaller(moduleRegistry);
 
     serviceContainer.registerSingleton(
       "ModuleRegistry",
@@ -75,7 +77,9 @@ export class CoreFactory {
 
     const eventBus = new EventBus();
 
-    const moduleLoader = new ModuleLoader();
+    const moduleLoader = new ModuleLoader(
+      options.modulesPath
+    );
 
     const moduleManager = new ModuleManager();
 
