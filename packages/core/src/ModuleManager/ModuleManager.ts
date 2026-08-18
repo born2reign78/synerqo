@@ -8,6 +8,8 @@ import type { ModuleDescriptor } from "./ModuleDescriptor.js";
 import type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";
 import { ModuleInstallState } from "../ModuleRegistry/ModuleInstallState.js";
 
+import type { IModuleRepository } from "../ModuleRepository/IModuleRepository.js";
+
 type ModuleConstructor = new () => IModule;
 
 type LoadedModule = {
@@ -30,6 +32,10 @@ export class ModuleManager implements IModuleManager {
   private readonly modules: IModule[] = [];
 
   private kernel: IKernel | undefined;
+
+  public constructor(
+    private readonly repository: IModuleRepository
+  ) {}
 
   public async load(
     kernel: IKernel,
@@ -54,13 +60,35 @@ export class ModuleManager implements IModuleManager {
 
       this.modules.push(module);
 
+      let stored =
+        await this.repository.findById(
+          module.manifest.id
+        );
+
+      if (!stored) {
+        stored =
+          await this.repository.create({
+            id: module.manifest.id,
+            name: module.manifest.name,
+            version: module.manifest.version,
+            description:
+              module.manifest.description,
+            author:
+              module.manifest.author,
+            state:
+              ModuleInstallState.NotInstalled,
+          });
+      }
+
       moduleRegistry.register({
         id: module.manifest.id,
         name: module.manifest.name,
         version: module.manifest.version,
-        description: module.manifest.description,
-        author: module.manifest.author,
-        state: ModuleInstallState.NotInstalled,
+        description:
+          module.manifest.description,
+        author:
+          module.manifest.author,
+        state: stored.state,
       });
     }
   }
@@ -147,7 +175,8 @@ export class ModuleManager implements IModuleManager {
     id: string
   ): IModule | undefined {
     return this.modules.find(
-      (module) => module.manifest.id === id
+      (module) =>
+        module.manifest.id === id
     );
   }
 
@@ -155,8 +184,12 @@ export class ModuleManager implements IModuleManager {
     return this.modules;
   }
 
-  public hasModule(id: string): boolean {
-    return this.getModule(id) !== undefined;
+  public hasModule(
+    id: string
+  ): boolean {
+    return (
+      this.getModule(id) !== undefined
+    );
   }
 
   public clear(): void {
@@ -204,7 +237,8 @@ export class ModuleManager implements IModuleManager {
       const ModuleClass =
         loadedModule.default as ModuleConstructor;
 
-      const instance = new ModuleClass();
+      const instance =
+        new ModuleClass();
 
       if (this.isModule(instance)) {
         return instance;
@@ -222,7 +256,8 @@ export class ModuleManager implements IModuleManager {
         exported as ModuleConstructor;
 
       try {
-        const instance = new ModuleClass();
+        const instance =
+          new ModuleClass();
 
         if (this.isModule(instance)) {
           return instance;
@@ -248,13 +283,18 @@ export class ModuleManager implements IModuleManager {
       return false;
     }
 
-    const module = value as Partial<IModule>;
+    const module =
+      value as Partial<IModule>;
 
     return (
-      typeof module.register === "function" &&
-      typeof module.boot === "function" &&
-      typeof module.shutdown === "function" &&
-      typeof module.manifest === "object" &&
+      typeof module.register ===
+        "function" &&
+      typeof module.boot ===
+        "function" &&
+      typeof module.shutdown ===
+        "function" &&
+      typeof module.manifest ===
+        "object" &&
       module.manifest !== null
     );
   }

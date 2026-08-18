@@ -19,3 +19,10 @@ export * from "./Bootstrap/index.js";
 export * from "./Providers/index.js";
 export * from "./ModuleRegistry/index.js";
 export * from "./ModuleInstaller/index.js";
+export type {
+  IModuleRepository,
+} from "./ModuleRepository/IModuleRepository.js";
+
+export type {
+  ModuleRecord,
+} from "./ModuleRepository/ModuleRecord.js";

@@ -1,32 +1,9 @@
-import type { ModuleInstallState } from "@prisma/client";
+import type { IModuleRepository } from "@synerqo/core";
 
-export interface ModuleRecord {
-  id: string;
-  name: string;
-  version: string;
-  description: string | null;
-  author: string | null;
-  state: ModuleInstallState;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type {
+  ModuleRecord,
+} from "@synerqo/core";
 
-export interface IModuleRepository {
-  findById(id: string): Promise<ModuleRecord | null>;
-
-  findAll(): Promise<readonly ModuleRecord[]>;
-
-  create(data: {
-    id: string;
-    name: string;
-    version: string;
-    description?: string;
-    author?: string;
-    state?: ModuleInstallState;
-  }): Promise<ModuleRecord>;
-
-  updateState(
-    id: string,
-    state: ModuleInstallState
-  ): Promise<ModuleRecord>;
-}
+export type {
+  IModuleRepository,
+};

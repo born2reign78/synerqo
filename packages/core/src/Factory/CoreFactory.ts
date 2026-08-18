@@ -17,10 +17,12 @@ import { ApiRegistry } from "../ApiRegistry/ApiRegistry.js";
 
 import type { IKernel } from "../Kernel/IKernel.js";
 import type { BootstrapOptions } from "../Bootstrap/BootstrapOptions.js";
+import type { IModuleRepository } from "../ModuleRepository/IModuleRepository.js";
 
 export class CoreFactory {
   public static createKernel(
-    options: BootstrapOptions
+    options: BootstrapOptions,
+    moduleRepository: IModuleRepository
   ): IKernel {
     // -------------------------------------------------------------------------
     // Configuration
@@ -96,12 +98,15 @@ export class CoreFactory {
       );
 
     const moduleManager =
-      new ModuleManager();
+      new ModuleManager(
+        moduleRepository
+      );
 
     const moduleInstaller =
       new ModuleInstaller(
         moduleRegistry,
-        moduleManager
+        moduleManager,
+        moduleRepository
       );
 
     serviceContainer.registerSingleton(

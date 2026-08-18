@@ -23,6 +23,9 @@ importers:
       '@synerqo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@synerqo/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@synerqo/module-administration':
         specifier: workspace:*
         version: link:../../modules/administration
@@ -119,6 +122,9 @@ importers:
       '@prisma/client':
         specifier: ^6.19.0
         version: 6.19.3(prisma@6.19.3(typescript@7.0.2))(typescript@7.0.2)
+      '@synerqo/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       '@types/node':
         specifier: ^26.1.2

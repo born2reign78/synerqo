@@ -3,11 +3,13 @@ import type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";
 import { ModuleInstallState } from "../ModuleRegistry/ModuleInstallState.js";
 import type { ModuleInfo } from "../ModuleRegistry/ModuleInfo.js";
 import type { IModuleManager } from "../ModuleManager/IModuleManager.js";
+import type { IModuleRepository } from "../ModuleRepository/IModuleRepository.js";
 
 export class ModuleInstaller implements IModuleInstaller {
   public constructor(
     private readonly registry: IModuleRegistry,
-    private readonly moduleManager: IModuleManager
+    private readonly moduleManager: IModuleManager,
+    private readonly repository: IModuleRepository
   ) {}
 
   public async install(id: string): Promise<void> {
@@ -20,8 +22,14 @@ export class ModuleInstaller implements IModuleInstaller {
       return;
     }
 
-    module.state =
-      ModuleInstallState.Installed;
+    const state = ModuleInstallState.Installed;
+
+    await this.repository.updateState(
+      id,
+      state
+    );
+
+    module.state = state;
   }
 
   public async uninstall(id: string): Promise<void> {
@@ -36,8 +44,15 @@ export class ModuleInstaller implements IModuleInstaller {
       );
     }
 
-    module.state =
+    const state =
       ModuleInstallState.NotInstalled;
+
+    await this.repository.updateState(
+      id,
+      state
+    );
+
+    module.state = state;
   }
 
   public async enable(id: string): Promise<void> {
@@ -60,6 +75,14 @@ export class ModuleInstaller implements IModuleInstaller {
     }
 
     await this.moduleManager.enable(id);
+
+    await this.repository.updateState(
+      id,
+      ModuleInstallState.Enabled
+    );
+
+    module.state =
+      ModuleInstallState.Enabled;
   }
 
   public async disable(id: string): Promise<void> {
@@ -73,6 +96,14 @@ export class ModuleInstaller implements IModuleInstaller {
     }
 
     await this.moduleManager.disable(id);
+
+    await this.repository.updateState(
+      id,
+      ModuleInstallState.Disabled
+    );
+
+    module.state =
+      ModuleInstallState.Disabled;
   }
 
   public isInstalled(id: string): boolean {

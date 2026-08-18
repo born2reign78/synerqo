@@ -14,7 +14,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.0"
+    "@prisma/client": "^6.19.0",
+    "@synerqo/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
