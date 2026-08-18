@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ModuleInstallState {
+  NOT_INSTALLED
+  INSTALLED
+  ENABLED
+  DISABLED
+}
+
+model Module {
+  id          String             @id
+  name        String
+  version     String
+  description String?
+  author      String?
+  state       ModuleInstallState @default(NOT_INSTALLED)
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
