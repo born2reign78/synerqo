@@ -2,6 +2,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import ModuleActions from "@/components/modules/ModuleActions";
 
 import { ModuleInstallState } from "@synerqo/core";
+import { ModuleRepository } from "@synerqo/database";
 
 import { getKernel } from "@/lib/kernel";
 
@@ -12,7 +13,11 @@ export default async function ModulesPage() {
 
   const menus = kernel.menus().getTree();
 
-  const modules = kernel.modules().getAll();
+  const moduleRepository =
+    new ModuleRepository();
+
+  const modules =
+    await moduleRepository.findAll();
 
   return (
     <MainLayout menus={menus}>

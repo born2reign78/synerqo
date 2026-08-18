@@ -13,7 +13,8 @@ import * as Core from "@synerqo/core";
 
 export { Core };
 
-let kernelPromise: Promise<IKernel> | undefined;
+let kernelPromise:
+  Promise<IKernel> | undefined;
 
 export function getKernel(): Promise<IKernel> {
   if (!kernelPromise) {
@@ -32,4 +33,8 @@ export function getKernel(): Promise<IKernel> {
   }
 
   return kernelPromise;
+}
+
+export function resetKernel(): void {
+  kernelPromise = undefined;
 }

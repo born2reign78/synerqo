@@ -14,6 +14,8 @@ export interface IMenuRegistry {
 
   remove(id: string): void;
 
+  removeByModule(moduleId: string): void;
+
   clear(): void;
 
   count(): number;

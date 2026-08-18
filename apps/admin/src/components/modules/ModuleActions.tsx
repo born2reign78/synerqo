@@ -16,26 +16,69 @@ export default function ModuleActions({
   const [loading, setLoading] = useState(false);
 
   async function install() {
+    await executeAction(
+      "/api/modules/install",
+      "Installation du module impossible."
+    );
+  }
+
+  async function enable() {
+    console.log("ENABLE CLICKED", {
+      id,
+      state,
+    });
+
+    await executeAction(
+      "/api/modules/enable",
+      "Activation du module impossible."
+    );
+  }
+
+  async function disable() {
+    console.log("DISABLE CLICKED", {
+      id,
+      state,
+    });
+
+    await executeAction(
+      "/api/modules/disable",
+      "Désactivation du module impossible."
+    );
+  }
+
+  async function executeAction(
+    url: string,
+    defaultError: string
+  ) {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "/api/modules/install",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id }),
-        }
-      );
+      console.log("BEFORE FETCH", {
+        url,
+        id,
+      });
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      console.log("AFTER FETCH", {
+        url,
+        status: response.status,
+        ok: response.ok,
+      });
 
       const result = await response.json();
 
+      console.log("API RESULT", result);
+
       if (!response.ok) {
         throw new Error(
-          result.error ??
-            "Installation du module impossible."
+          result.error ?? defaultError
         );
       }
 
@@ -46,7 +89,7 @@ export default function ModuleActions({
       alert(
         error instanceof Error
           ? error.message
-          : "Installation du module impossible."
+          : defaultError
       );
     } finally {
       setLoading(false);
@@ -60,31 +103,40 @@ export default function ModuleActions({
         onClick={install}
         disabled={loading}
       >
-        {loading ? "Installation..." : "Installer"}
+        {loading
+          ? "Installation..."
+          : "Installer"}
       </button>
     );
   }
 
-  if (state === "installed") {
+  if (
+    state === "installed" ||
+    state === "disabled"
+  ) {
     return (
-      <button type="button">
-        Activer
-      </button>
-    );
-  }
-
-  if (state === "disabled") {
-    return (
-      <button type="button">
-        Activer
+      <button
+        type="button"
+        onClick={enable}
+        disabled={loading}
+      >
+        {loading
+          ? "Activation..."
+          : "Activer"}
       </button>
     );
   }
 
   if (state === "enabled") {
     return (
-      <button type="button">
-        Désactiver
+      <button
+        type="button"
+        onClick={disable}
+        disabled={loading}
+      >
+        {loading
+          ? "Désactivation..."
+          : "Désactiver"}
       </button>
     );
   }

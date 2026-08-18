@@ -8,6 +8,8 @@ import type { ModuleDescriptor } from "./ModuleDescriptor.js";
 import type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";
 import { ModuleInstallState } from "../ModuleRegistry/ModuleInstallState.js";
 
+import type { IMenuRegistry } from "../MenuRegistry/IMenuRegistry.js";
+
 import type { IModuleRepository } from "../ModuleRepository/IModuleRepository.js";
 
 type ModuleConstructor = new () => IModule;
@@ -106,7 +108,8 @@ export class ModuleManager implements IModuleManager {
           "ModuleRegistry"
         );
 
-    const moduleInfo = moduleRegistry.get(id);
+    const moduleInfo =
+      moduleRegistry.get(id);
 
     if (!moduleInfo) {
       throw new Error(
@@ -131,7 +134,13 @@ export class ModuleManager implements IModuleManager {
     }
 
     await module.register(kernel);
+
     await module.boot(kernel);
+
+    await this.repository.updateState(
+      id,
+      ModuleInstallState.Enabled
+    );
 
     moduleInfo.state =
       ModuleInstallState.Enabled;
@@ -150,7 +159,15 @@ export class ModuleManager implements IModuleManager {
           "ModuleRegistry"
         );
 
-    const moduleInfo = moduleRegistry.get(id);
+    const menuRegistry =
+      kernel
+        .services()
+        .resolve<IMenuRegistry>(
+          "MenuRegistry"
+        );
+
+    const moduleInfo =
+      moduleRegistry.get(id);
 
     if (!moduleInfo) {
       throw new Error(
@@ -166,6 +183,13 @@ export class ModuleManager implements IModuleManager {
     }
 
     await module.shutdown(kernel);
+
+    menuRegistry.removeByModule(id);
+
+    await this.repository.updateState(
+      id,
+      ModuleInstallState.Disabled
+    );
 
     moduleInfo.state =
       ModuleInstallState.Disabled;
@@ -210,7 +234,8 @@ export class ModuleManager implements IModuleManager {
   private requireModule(
     id: string
   ): IModule {
-    const module = this.getModule(id);
+    const module =
+      this.getModule(id);
 
     if (!module) {
       throw new Error(
@@ -248,7 +273,10 @@ export class ModuleManager implements IModuleManager {
     for (const exported of Object.values(
       loadedModule
     )) {
-      if (typeof exported !== "function") {
+      if (
+        typeof exported !==
+        "function"
+      ) {
         continue;
       }
 
