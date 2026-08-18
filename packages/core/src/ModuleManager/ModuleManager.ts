@@ -161,9 +161,9 @@ export class ModuleManager implements IModuleManager {
 
     const menuRegistry =
       kernel
-        .services()
+        .getRegistry()
         .resolve<IMenuRegistry>(
-          "MenuRegistry"
+          "menus"
         );
 
     const moduleInfo =
