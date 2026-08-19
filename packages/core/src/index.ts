@@ -26,3 +26,4 @@ export type {
 export type {
   ModuleRecord,
 } from "./ModuleRepository/ModuleRecord.js";
+export * from "./ModuleMigration/index.js";

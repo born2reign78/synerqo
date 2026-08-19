@@ -25,3 +25,13 @@ model Module {
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
 }
+
+model ModuleMigration {
+  id          String   @id @default(cuid())
+  moduleId    String
+  migrationId String
+  executedAt  DateTime @default(now())
+
+  @@unique([moduleId, migrationId])
+  @@index([moduleId])
+}
