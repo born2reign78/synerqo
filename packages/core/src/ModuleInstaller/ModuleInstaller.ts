@@ -1,18 +1,27 @@
 import type { IModuleInstaller } from "./IModuleInstaller.js";
+
 import type { IModuleRegistry } from "../ModuleRegistry/IModuleRegistry.js";
 import { ModuleInstallState } from "../ModuleRegistry/ModuleInstallState.js";
 import type { ModuleInfo } from "../ModuleRegistry/ModuleInfo.js";
+
 import type { IModuleManager } from "../ModuleManager/IModuleManager.js";
 import type { IModuleRepository } from "../ModuleRepository/IModuleRepository.js";
 
-export class ModuleInstaller implements IModuleInstaller {
+import type { IModuleDatabase } from "../ModuleDatabase/IModuleDatabase.js";
+
+export class ModuleInstaller
+  implements IModuleInstaller
+{
   public constructor(
     private readonly registry: IModuleRegistry,
     private readonly moduleManager: IModuleManager,
-    private readonly repository: IModuleRepository
+    private readonly repository: IModuleRepository,
+    private readonly database: IModuleDatabase
   ) {}
 
-  public async install(id: string): Promise<void> {
+  public async install(
+    id: string
+  ): Promise<void> {
     const module = this.require(id);
 
     if (
@@ -22,7 +31,17 @@ export class ModuleInstaller implements IModuleInstaller {
       return;
     }
 
-    const state = ModuleInstallState.Installed;
+    /*
+     * Installation de la base de données
+     * du module.
+     *
+     * Le schema.prisma du module est la
+     * source de vérité.
+     */
+    await this.database.install(id);
+
+    const state =
+      ModuleInstallState.Installed;
 
     await this.repository.updateState(
       id,
@@ -32,7 +51,9 @@ export class ModuleInstaller implements IModuleInstaller {
     module.state = state;
   }
 
-  public async uninstall(id: string): Promise<void> {
+  public async uninstall(
+    id: string
+  ): Promise<void> {
     const module = this.require(id);
 
     if (
@@ -43,6 +64,8 @@ export class ModuleInstaller implements IModuleInstaller {
         `Module '${id}' must be disabled before uninstalling it.`
       );
     }
+
+    await this.database.uninstall(id);
 
     const state =
       ModuleInstallState.NotInstalled;
@@ -55,7 +78,9 @@ export class ModuleInstaller implements IModuleInstaller {
     module.state = state;
   }
 
-  public async enable(id: string): Promise<void> {
+  public async enable(
+    id: string
+  ): Promise<void> {
     const module = this.require(id);
 
     if (
@@ -85,7 +110,9 @@ export class ModuleInstaller implements IModuleInstaller {
       ModuleInstallState.Enabled;
   }
 
-  public async disable(id: string): Promise<void> {
+  public async disable(
+    id: string
+  ): Promise<void> {
     const module = this.require(id);
 
     if (
@@ -106,7 +133,9 @@ export class ModuleInstaller implements IModuleInstaller {
       ModuleInstallState.Disabled;
   }
 
-  public isInstalled(id: string): boolean {
+  public isInstalled(
+    id: string
+  ): boolean {
     const module = this.require(id);
 
     return (
@@ -115,7 +144,9 @@ export class ModuleInstaller implements IModuleInstaller {
     );
   }
 
-  public isEnabled(id: string): boolean {
+  public isEnabled(
+    id: string
+  ): boolean {
     const module = this.require(id);
 
     return (
@@ -124,12 +155,16 @@ export class ModuleInstaller implements IModuleInstaller {
     );
   }
 
-  public getModules(): readonly ModuleInfo[] {
+  public getModules():
+    readonly ModuleInfo[] {
     return this.registry.getAll();
   }
 
-  private require(id: string): ModuleInfo {
-    const module = this.registry.get(id);
+  private require(
+    id: string
+  ): ModuleInfo {
+    const module =
+      this.registry.get(id);
 
     if (!module) {
       throw new Error(

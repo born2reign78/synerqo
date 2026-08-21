@@ -8,3 +8,4 @@ export type {
   IModuleRepository,
   ModuleRecord,
 } from "./ModuleRepository/IModuleRepository.js";
+export * from "./PrismaModuleDatabase.js";

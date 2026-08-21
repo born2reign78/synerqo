@@ -18,21 +18,24 @@ import { ApiRegistry } from "../ApiRegistry/ApiRegistry.js";
 import type { IKernel } from "../Kernel/IKernel.js";
 import type { BootstrapOptions } from "../Bootstrap/BootstrapOptions.js";
 import type { IModuleRepository } from "../ModuleRepository/IModuleRepository.js";
+import type { IModuleDatabase } from "../ModuleDatabase/IModuleDatabase.js";
 
 export class CoreFactory {
   public static createKernel(
     options: BootstrapOptions,
-    moduleRepository: IModuleRepository
+    moduleRepository: IModuleRepository,
+    moduleDatabase: IModuleDatabase
   ): IKernel {
     // -------------------------------------------------------------------------
     // Configuration
     // -------------------------------------------------------------------------
 
-    const configuration = new Configuration({
-      env: "development",
-      debug: true,
-      version: "1.0.0",
-    });
+    const configuration =
+      new Configuration({
+        env: "development",
+        debug: true,
+        version: "1.0.0",
+      });
 
     configuration.set(
       "modules.path",
@@ -106,8 +109,13 @@ export class CoreFactory {
       new ModuleInstaller(
         moduleRegistry,
         moduleManager,
-        moduleRepository
+        moduleRepository,
+        moduleDatabase
       );
+
+    // -------------------------------------------------------------------------
+    // Services Core
+    // -------------------------------------------------------------------------
 
     serviceContainer.registerSingleton(
       "ModuleRegistry",
@@ -117,6 +125,11 @@ export class CoreFactory {
     serviceContainer.registerSingleton(
       "ModuleInstaller",
       moduleInstaller
+    );
+
+    serviceContainer.registerSingleton(
+      "ModuleDatabase",
+      moduleDatabase
     );
 
     // -------------------------------------------------------------------------

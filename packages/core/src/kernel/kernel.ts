@@ -17,7 +17,8 @@ import type { IKernel } from "./IKernel.js";
 import { KernelStatus } from "./KernelStatus.js";
 
 export class Kernel implements IKernel {
-  private status: KernelStatus = KernelStatus.Stopped;
+  private status: KernelStatus =
+    KernelStatus.Stopped;
 
   public constructor(
     private readonly configuration: IConfiguration,
@@ -32,7 +33,9 @@ export class Kernel implements IKernel {
    * Démarre le Core.
    */
   public async boot(): Promise<void> {
-    if (this.status !== KernelStatus.Stopped) {
+    if (
+      this.status !== KernelStatus.Stopped
+    ) {
       return;
     }
 
@@ -40,9 +43,30 @@ export class Kernel implements IKernel {
 
     await this.configuration.load();
 
-    const modules = await this.moduleLoader.discover();
+    const modules =
+      await this.moduleLoader.discover();
 
-    await this.moduleManager.load(this, modules);
+    console.log(
+      "[KERNEL] discovered modules:",
+      modules.map(
+        (module) => module.manifest.id
+      )
+    );
+
+    console.log(
+      "[KERNEL] loading modules:",
+      modules.length
+    );
+
+    await this.moduleManager.load(
+      this,
+      modules
+    );
+
+    console.log(
+      "[KERNEL] loaded modules:",
+      this.modules().getAll()
+    );
 
     this.status = KernelStatus.Ready;
   }
@@ -61,7 +85,9 @@ export class Kernel implements IKernel {
    * Arrête le Core.
    */
   public async shutdown(): Promise<void> {
-    if (this.status !== KernelStatus.Ready) {
+    if (
+      this.status !== KernelStatus.Ready
+    ) {
       return;
     }
 
@@ -86,7 +112,9 @@ export class Kernel implements IKernel {
    * Le Core est-il prêt ?
    */
   public isReady(): boolean {
-    return this.status === KernelStatus.Ready;
+    return (
+      this.status === KernelStatus.Ready
+    );
   }
 
   /**
@@ -107,41 +135,53 @@ export class Kernel implements IKernel {
    * Registry des menus.
    */
   public menus(): IMenuRegistry {
-    return this.registry.resolve<IMenuRegistry>("menus");
+    return this.registry.resolve<IMenuRegistry>(
+      "menus"
+    );
   }
 
   /**
    * Registry des routes.
    */
   public routes(): IRouteRegistry {
-    return this.registry.resolve<IRouteRegistry>("routes");
+    return this.registry.resolve<IRouteRegistry>(
+      "routes"
+    );
   }
 
   /**
    * Registry des widgets.
    */
   public widgets(): IWidgetRegistry {
-    return this.registry.resolve<IWidgetRegistry>("widgets");
+    return this.registry.resolve<IWidgetRegistry>(
+      "widgets"
+    );
   }
 
   /**
    * Registry des dashboards.
    */
   public dashboards(): IDashboardRegistry {
-    return this.registry.resolve<IDashboardRegistry>("dashboards");
+    return this.registry.resolve<IDashboardRegistry>(
+      "dashboards"
+    );
   }
 
   /**
    * Registry des permissions.
    */
   public permissions(): IPermissionRegistry {
-    return this.registry.resolve<IPermissionRegistry>("permissions");
+    return this.registry.resolve<IPermissionRegistry>(
+      "permissions"
+    );
   }
 
   /**
    * Registry des API.
    */
   public apis(): IApiRegistry {
-    return this.registry.resolve<IApiRegistry>("apis");
+    return this.registry.resolve<IApiRegistry>(
+      "apis"
+    );
   }
 }

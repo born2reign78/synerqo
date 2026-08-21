@@ -7,6 +7,7 @@ import {
 
 import {
   ModuleRepository,
+  PrismaModuleDatabase,
 } from "@synerqo/database";
 
 import * as Core from "@synerqo/core";
@@ -21,6 +22,9 @@ export function getKernel(): Promise<IKernel> {
     const moduleRepository =
       new ModuleRepository();
 
+    const moduleDatabase =
+      new PrismaModuleDatabase();
+
     kernelPromise = new Bootstrap(
       {
         modulesPath: path.resolve(
@@ -28,7 +32,8 @@ export function getKernel(): Promise<IKernel> {
           "../../modules"
         ),
       },
-      moduleRepository
+      moduleRepository,
+      moduleDatabase
     ).create();
   }
 
